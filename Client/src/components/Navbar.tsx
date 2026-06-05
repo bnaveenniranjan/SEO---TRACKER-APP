@@ -1,8 +1,10 @@
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
 import { Search, BarChart3, History, LogOut, Menu, X, Target, Sun, Moon, ChartNoAxesColumnIcon } from "lucide-react";
 import { useState } from "react";
 import { useApp } from "../context/Appcontext";
+import { useNavigate } from "react-router-dom";
+
 export default function Navbar() {
     const { user,logout} = useApp()
     const { theme, setTheme } = useTheme();

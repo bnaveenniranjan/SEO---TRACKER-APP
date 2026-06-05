@@ -1,16 +1,36 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Mail, Lock, Loader2, ChartNoAxesColumnIcon, User2Icon } from "lucide-react";
-
+import { useApp } from "../context/Appcontext";
+import { useNavigate } from "react-router-dom";
 export default function Login({ state }: { state: string }) {
     const [isLoginState, setIsLoginState] = useState(state === "login");
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [loading] = useState(false);
+    const [loading,setLoading] = useState(false);
+    const {login,register} = useApp()
+
+    const [SearchParams] = useSearchParams()
+    const navigate = useNavigate()
 
     const handleSubmit = async (e: React.SubmitEvent) => {
         e.preventDefault();
+        setLoading(true)
+        
+        let result;
+        if(isLoginState){
+            result = await login(email,password)
+        }else{
+            result = await register(name,email,password)
+        }
+        if(result.success){
+            const redirect = SearchParams.get("redirect") || "/dashboard";
+            navigate(redirect)
+        }else{
+            toast.error(result.message || "Login failed")
+        }
+        setLoading(false)
     };
 
     return (
