@@ -158,49 +158,88 @@ export async function rankTracker(keyword, targetDomain) {
 
       // Stop if no results
       if (!pageResults.length) break;
+      
+      //5.results Synthesis : Update global results and check for target match
+      for(const r of pageResults){
+        r.position = allResults.length + 1;
+        allResults.push(r)
+        if(!found && (r.domain.toLowerCase().includes(cleanTarget) ||  cleanTarget.includes
+          (r.domain.toLowerCase()))){
+            found ={...r,page:gpage + 1}
+          }
+        }     
+        if (found) break;
+        await page.waitforTimeout(2000 + Math.random() * 2000);
+        }
+        //6.FinalizAation ; close browser and extrect competitors
+        await browser.close();
+        const competitors = allResults.filter((r)=>!r.domain.toLowerCase().includes(cleanTarget)&& !cleanTarget.includes(r.domain.toLowerCase())).slice(0,10);
+        return{
+          success:true,
+          data:{
+            keyword,
+            targetDomain,
+            postion :found?.position || null,
+            page:found?.pAGE || null,
+            title : found?.snippet || " ",
+            snippet:found?.snippet || " ",
+            competitors,
+            totalResultsScammed: allResults.Length
+             }
 
+          }
+      }catch(error){ 
+        console.error("Rank check error:",error.message);
+        if(browser) await browser.close().catch(()=>{})
+          return {success:false,error : error.message}
+      }
+      }
       // Save all results
-      allResults.push(...pageResults);
+    //  allResults.push(...pageResults);
 
       // Find target domain rank
-      for (let i = 0; i < pageResults.length; i++) {
-        const result = pageResults[i];
+ //     for (let i = 0; i < pageResults.length; i++) {
+   //     const result = pageResults[i];
 
-        if (
-          result.domain
-            .toLowerCase()
-            .includes(cleanTarget)
-        ) {
-          found = {
-            position: gpage * 10 + i + 1,
-            ...result,
-          };
+    //    if (
+    //      result.domain
+     //       .toLowerCase()
+     //       .includes(cleanTarget)
+    //    ) {
+    //      found = {
+    //        position: gpage * 10 + i + 1,
+    //        ...result,
+    //      };
 
-          break;
-        }
-      }
+    //      break;
+    //    }
+    //  }
 
       // Stop if found
-      if (found) break;
-    }
+    //  if (found) break;
+  //  }
 
-    return {
+  //  return {
       keyword,
       targetDomain,
       found,
       totalResults: allResults.length,
       results: allResults,
-    };
-  } catch (error) {
-    console.error("Rank Tracker Error:", error);
+  //  };
+  //} catch (error) {
+  //  console.error("Rank Tracker Error:", error.message);
+  //  if(browser) await browser.close().catch(()=>{})
+  //    return{success:false,error:error.message}
+ // }
+//}
 
-    return {
-      error: error.message,
-    };
-  } finally {
-    if (browser) {
-      await browser.close();
-    }
-  }
-}
+  //  return {
+  //    error: error.message,
+  //  };
+  //} finally {
+  //  if (browser) {
+  //    await browser.close();
+  //  }
+ // }
+//}
 
