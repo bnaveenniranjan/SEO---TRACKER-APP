@@ -32,7 +32,7 @@ export default function Dashboard() {
         }, 1000);
     };
 
-    const handleAnalyze = (e: React.SubmitEvent) => {
+    const handleAnalyze = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (url.trim()) {
             navigate(`/analyze?url=${encodeURIComponent(url)}`);

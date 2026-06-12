@@ -1,4 +1,5 @@
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { Link, useSearchParams } from "react-router-dom";
 import { Mail, Lock, Loader2, ChartNoAxesColumnIcon, User2Icon } from "lucide-react";
 import { useApp } from "../context/Appcontext";
@@ -14,7 +15,7 @@ export default function Login({ state }: { state: string }) {
     const [SearchParams] = useSearchParams()
     const navigate = useNavigate()
 
-    const handleSubmit = async (e: React.SubmitEvent) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true)
         
