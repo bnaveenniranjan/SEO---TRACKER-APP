@@ -4,18 +4,18 @@ import Browserbase from "@browserbasehq/sdk";
 // Search Google for a keyword and extract ranking results
 export async function rankTracker(keyword, targetDomain) {
   let browser;
-
-  // Instantiate lazily so dotenv is already loaded
-  const bb = new Browserbase({ apiKey: process.env.BROWSERBASE_API_KEY });
+  const bb = new Browserbase({
+    apiKey: process.env.BROWSERBASE_API_KEY,
+  });
 
   try {
-    // 1. Initialize BrowserBase Session & connect Playwright
+    // 1.Initialize BrowserBase Session & connect Playwright
     const session = await bb.sessions.create({ browserSettings: { blockAds: true } });
     browser = await chromium.connectOverCDP(session.connectUrl);
     const page = browser.contexts()[0].pages()[0];
     page.setDefaultNavigationTimeout(45000);
 
-    // 2. Initial google visit & Consent handling
+    //2.Initial google visit & Consent handling
     await page.goto("https://www.google.com", { waitUntil: "networkidle" });
     try {
       const btn = await page.$('button[id="L2AGLB"],form[action*="consent"] button');
@@ -30,14 +30,14 @@ export async function rankTracker(keyword, targetDomain) {
 
     const cleanTarget = targetDomain.replace("www.", "").toLowerCase();
 
-    // 3. Search Loop: iterate through up to 5 pages of google results
+    // 3.Search Loop : iterate through up to 5 pages of google results
     for (let gpage = 0; gpage < 5; gpage++) {
       await page.goto(
         `https://www.google.com/search?q=${encodeURIComponent(keyword)}&start=${gpage * 10}&num=10&hl=en&gl=us`,
         { waitUntil: "networkidle" }
       );
 
-      // 4. Page Extraction: retry up to 3 times if results are missing
+      //4.page Extraction : retry up to 3 times if results are missing
       let pageResults = [];
 
       for (let retry = 0; retry < 3; retry++) {
@@ -114,43 +114,40 @@ export async function rankTracker(keyword, targetDomain) {
           await page.reload({ waitUntil: "networkidle" });
         }
       }
+      if(!pageResults.length) break;
 
-      if (!pageResults.length) break;
-
-      // 5. Result Synthesis: update global results and check for target match
-      for (const r of pageResults) {
-        r.position = allResults.length + 1;
-        allResults.push(r);
-        if (!found && (r.domain.toLowerCase().includes(cleanTarget) || cleanTarget.includes(r.domain.toLowerCase()))) {
-          found = { ...r, page: gpage + 1 };
+      //5.Result Synthesis :update global results and check for taget match
+      for(const r of pageResults){
+        r.position = allResults.length+1;
+        allResults.push(r)
+        if(!found && (r.domain.toLowerCase().includes(cleanTarget) ||  cleanTarget.includes(r.domain.toLowerCase()))){
+          found = {...r,page:gpage + 1}
         }
       }
-      if (found) break;
-      await page.waitForTimeout(2000 + Math.random() * 2000);
-    }
-
-    // 6. Finalization: close browser and extract competitors
+      if(found) break;
+      await page.waitForTimeout(2000 + Math.random()*2000);
+     }
+     //6.Finalization : close browser and extract competitors
     await browser.close();
-    const competitors = allResults
-      .filter((r) => !r.domain.toLowerCase().includes(cleanTarget) && !cleanTarget.includes(r.domain.toLowerCase()))
-      .slice(0, 10);
+    const competitors = allResults.filter((r)=>!r.domain.toLowerCase().includes(cleanTarget) && !cleanTarget.includes(r.domain.toLowerCase())).slice(0,10);
 
-    return {
-      success: true,
-      data: {
-        keyword,
-        targetDomain,
-        position: found?.position || null,
-        page: found?.page || null,
-        title: found?.title || "",
-        snippet: found?.snippet || "",
-        competitors,
-        totalResultsScanned: allResults.length,
-      },
-    };
-  } catch (error) {
-    console.error("rank check error:", error.message);
-    if (browser) await browser.close().catch(() => {});
-    return { success: false, error: error.message };
+    return{
+      success:true,
+      data:{
+         keyword,
+         targetDomain,
+         position:found?.position || null,
+         page :found?.page || null,
+         title :found?.title || "",
+         snippet : found?.snippet || "",
+         competitors,
+         totalResultsScanned: allResults.length
+
+      }
+    }
+    }catch(error){
+       console.error("rank check error:",error.message);
+       if(browser) await browser.close().catch(()=>{})
+        return{success:false,error:error.message}
+    }
   }
-}
