@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-
 const rankEntrySchema = new mongoose.Schema({
     date: {type : Date,required : true},
     position:{type:Number,default:null},

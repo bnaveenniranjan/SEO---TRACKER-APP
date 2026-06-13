@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Target, Plus, RefreshCw, Trash2, TrendingUp, TrendingDown, Minus, ExternalLink, Clock, Loader2, X, Search, Globe, AlertCircle, Eye, EyeOff, Filter, ArrowUpDown } from "lucide-react";
-import { dummyRankings } from "../assets/assets";
+import { useApp } from "../context/Appcontext";
 
 interface KeywordItem {
     _id: string;
@@ -20,6 +20,8 @@ interface KeywordItem {
 }
 
 export default function RankTracker() {
+
+    const {api} = useApp()
     const [keywords, setKeywords] = useState<KeywordItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [showAddModal, setShowAddModal] = useState(false);
@@ -34,19 +36,54 @@ export default function RankTracker() {
     const [sortBy, setSortBy] = useState("newest");
 
     const fetchKeywords = async () => {
-        setTimeout(() => {
-            setKeywords(dummyRankings);
-            setLoading(false);
-        }, 1000);
+       try{
+        const res = await api.get('/api/rank/list');
+        if(res.data.sucess){
+            setKeywords(res.data.keywords)
+        }
+       }catch(err){
+        console.error("Failed to fetch Keywords:",err);
+       }
+       setLoading(false)
     };
 
-    const handleAdd = async (e: React.SubmitEvent) => {
+    const handleAdd = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        if(!newKeyword.trim ()|| !newUrl.trim()) return;
+
         setAdding(true);
-        setTimeout(() => {
-            setShowAddModal(false);
-            setAdding(false);
-        }, 1000);
+        setAddError("");
+        try{
+            const res = await api.post('/api/rank/add',{
+                keyword:newKeyword.trim(),
+                url:newUrl.trim()
+
+            });
+            if(res.data.success){
+            setKeywords((prev)=>[res.data.tracking,...prev])
+            setNewKeyword("")
+            setNewUrl("")
+            setShowAddModal(false)
+            //Poll for completion
+            const id = res.data.tracking._id;
+            const pollInterval = setInterval(async ()=>{
+                try{
+                    const check = await api.get(`/api/rank/${id}`);
+                    if(check.data.tracking.status !== "checking"){
+                        clearInterval(pollInterval)
+                        setKeywords((prev)=> prev.map((k)=>(k._id === id? check.data.tracking:k)))
+                    }
+                }catch(error : any){
+                    console.error(error);
+            }
+            },3000)
+            }
+
+        }catch(error : any){
+            setAddError(error.response?.data?.message || "Failed to add Keyword") 
+            
+        }
+        setAdding(false)
     };
 
     const handleRefresh = async (id: string) => {
@@ -217,7 +254,7 @@ export default function RankTracker() {
 
                                         <div className="flex-1 min-w-0">
                                             <Link to={`/rank/${kw._id}`} className="text-base font-semibold text-foreground hover:text-primary transition-colors block truncate">
-                                                "{kw.keyword}"
+                                                {kw.keyword}
                                             </Link>
                                             <div className="flex items-center gap-2 mt-1">
                                                 <Globe size={12} className="text-muted-foreground" />
