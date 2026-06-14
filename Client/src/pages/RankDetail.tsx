@@ -38,6 +38,8 @@ interface TrackingData {
 }
 
 export default function RankDetail() {
+    const {api} = useApp()
+
     const { id } = useParams();
     const [tracking, setTracking] = useState<TrackingData | null>(null);
     const [loading, setLoading] = useState(true);
@@ -46,19 +48,47 @@ export default function RankDetail() {
     const chartRef = useRef<HTMLCanvasElement>(null);
 
     const fetchTracking = async () => {
-        setTimeout(() => {
-            setTracking(dummyWebsiteRanking);
-            setLoading(false);
-        }, 1000);
+        try{
+             const res = await api.get(`/api/rank/${id}`);
+             if(res.data.success){
+                if(res.data.tracking.status === "checking"){
+                setTimeout(fetchTracking,3000)
+                setTracking(res.data.tracking)
+                return;
+             }
+              setTracking(res.data.tracking)
+            }
+             
+        }catch{
+            //Handle by null state
+        }
+        setLoading(false)
     };
 
     const handleRefresh = async () => {
         if (!tracking) return;
         setRefreshing(true);
-        setTimeout(() => {
-            setTracking(dummyWebsiteRanking);
-            setRefreshing(false);
-        }, 1000);
+        try{
+            await api.post(`/api/rank/&{tracking._id}/refresh`);
+            setTracking((prev)=>(prev ? {...prev,status:"checking"}:null))
+
+            const pollInterval = setInterval(async ()=>{
+                try{
+                    const check = await api.get(`/api/rank/$[tracking._id}`);
+                    if(check.data.tracking.status !== ""){
+                        clearInterval(pollInterval);
+                        setTracking(check.data.tracking)
+                        setRefreshing(false)
+                    }
+                }catch(error){
+                    console.error(error)
+            
+                }
+            },3000)
+        }catch{
+            setRefreshing(false)
+
+        }
     };
 
     const drawChart = () => {
