@@ -89,6 +89,53 @@ SEO-TRACKER/
 ├── .env
 ├── package.json
 └── README.md
+Website Analysis Flow:
+User Enters Website URL
+          │
+          ▼
+Frontend Sends Request
+          │
+          ▼
+Backend Receives URL
+          │
+          ▼
+Website Data Scraped
+(Cheerio / Playwright)
+          │
+          ▼
+SEO Metrics Calculated
+          │
+          ▼
+SEO Score Generated
+          │
+          ▼
+Data Stored in MongoDB
+          │
+          ▼
+Results Displayed
+📈 Rank Tracking Flow
+User Adds Keyword
+          │
+          ▼
+Keyword Saved
+          │
+          ▼
+Browserbase Session Created
+          │
+          ▼
+Google Search Executed
+          │
+          ▼
+Target Domain Found
+          │
+          ▼
+Position Extracted
+          │
+          ▼
+Ranking Stored in MongoDB
+          │
+          ▼
+Displayed on Dashboard
 ⚙️ Installation
 1️⃣ Clone Repository
 git clone https://github.com/yourusername/seo-tracker.git
