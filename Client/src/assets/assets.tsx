@@ -290,7 +290,7 @@ export const dummyAnalysisData = [
 export const dummyWebsiteAnalysis = {
     categories: { seo: 91, performance: 100, accessibility: 90, bestPractices: 90 },
     metaData: {
-        title: "Full Stack Web Development Projects with source code - GreatStack",
+        title: "Full Stack Web Development Projects with source code - naveen",
         description: "Project based learning platform for web developers. Find Full Stack Project, Courses, Tutorial for Next JS, MERN Stack, React JS and HTML-CSS.",
         canonical: "https://greatstack.dev/",
         robots: "",

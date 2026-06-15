@@ -2,12 +2,10 @@ import { chromium } from "playwright-core";
 import Browserbase from "@browserbasehq/sdk";
 
 
-  const bb = new Browserbase({
-    apiKey: process.env.BROWSERBASE_API_KEY,
-  });
-
-
   export async function scrapeUrl (url){
+    const bb = new Browserbase({
+      apiKey: process.env.BROWSERBASE_API_KEY,
+    });
     let browser;
     try{
       const session = await bb.sessions.create({ browserSettings: { blockAds: true } });
@@ -19,11 +17,11 @@ import Browserbase from "@browserbasehq/sdk";
           const startTime = Date.now()
           let response;
           try{
-            response = await page.goto(url,{waitUntil:"domcontentLoaded"})
+            response = await page.goto(url,{waitUntil:"domcontentloaded"})
            }catch (error){
             await browser.close().catch(()=>{});
             browser = null;
-            return {success : false,error: NavError.message}
+            return {success : false,error: error.message}
           }
           const loadtime = Date.now() - startTime;
           await page.waitForTimeout(2000);
@@ -31,7 +29,7 @@ import Browserbase from "@browserbasehq/sdk";
           //Extract all SEO-relevant data from the rendered page
           const scrappedData = await page.evaluate(()=>{
             const getMeta = (name)=>{
-                const el = document.querySelector(`meta[name="${name}"]`) || document.querySelector(`meta[property="${name}]`);
+                const el = document.querySelector(`meta[name="${name}"]`) || document.querySelector(`meta[property="${name}"]`);
                 return el? el.getAttribute("content") || "" : "";
 
             }
@@ -44,11 +42,11 @@ import Browserbase from "@browserbasehq/sdk";
             const ogImage = getMeta("og:image");
             const twitterCard = getMeta("twitter:card");
             const viewport = getMeta("viewport");
-            const charsetMeta = document.querySelector('meta[charset');
+            const charsetMeta = document.querySelector('meta[charset]');
             const charset = charsetMeta ? charsetMeta.getAttribute("charset")  || " " : ""; 
 
             const h1elements = document.querySelectorAll("h1");
-            const h1Texts = Array.from(h1Elements).map((el)=>el.textContent?.trim() || "");
+            const h1Texts = Array.from(h1elements).map((el)=>el.textContent?.trim() || "");
             const heading ={
                 h1:document.querySelectorAll("h1").length,
                 h2:document.querySelectorAll("h2").length,
@@ -60,14 +58,14 @@ import Browserbase from "@browserbasehq/sdk";
 
 
             };
-            const allLinks = Arrays.from(document.querySelectorAll("a.[href]"));
+            const allLinks = Array.from(document.querySelectorAll("a[href]"));
             const currentHost = window.location.hostname;
             let internalLinks =0;
             let externalLinks = 0;
             allLinks.forEach((link)=>{
                 try{
                     const href = link.href;
-                    if(href.startsWith("mailto:")|| href.startsWith("tell:"))return;
+                    if(href.startsWith("mailto:")|| href.startsWith("tel:"))return;
                     const linkUrl = new URL(href);
                     if(linkUrl.hostname === currentHost) internalLinks++;
                     else externalLinks++
@@ -116,5 +114,6 @@ import Browserbase from "@browserbasehq/sdk";
             }
         }
 
+        return {success:false, error:error.message};
     }
   }

@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const issueSchema = new mongoose.Schema({
     severity:{type:String,enum:["critical ","warning",'info'],required:true},
     category:{type:String,required:true},
-    message:{type:String,requied:true},
+    message:{type:String,required:true},
     recommendation:{type:String,required:true},
     
 },{_id:false})
@@ -11,7 +11,7 @@ const issueSchema = new mongoose.Schema({
 const analysisSchema =  new mongoose.Schema({
     userId:{type:mongoose.Schema.Types.ObjectId,ref:"User",required:true },
     url:{type:String,required:true},
-    overallScore:{type:number,min:0,max:100,default:0},
+    overallScore:{type:Number,min:0,max:100,default:0},
     categories:{
         seo:{type:Number,default:0},
         performance :{type :Number,default:0},
@@ -44,13 +44,13 @@ const analysisSchema =  new mongoose.Schema({
     links:{
         internal :{type:Number,default:0},
         external:{type:Number,default:0},
-        broken:{type:number,default:0},
-        total:{type:number,default:0},
+        broken:{type:Number,default:0},
+        total:{type:Number,default:0},
 
     },
     images:{
         total:{type:Number,default:0},
-        missingAlt:{type:Numnber,default:0},
+        missingAlt:{type:Number,default:0},
         withAlt:{type:Number,default:0}
     },
     Keywords :[
@@ -63,8 +63,9 @@ const analysisSchema =  new mongoose.Schema({
     issues:[],
     loadTime :{type:Number,default:0},
     PageSize:{type:Number,default:0},
-    wordCount:{type:number,default:0},
-    status:{type,enum:["pending","processing","completed","failed"],default:"pending"},
+    wordCount:{type:Number,default:0},
+    status:{type:String,enum:["pending","processing","completed","failed"],
+    default:"pending"},
  }, {timestamps:true})
 
  const Analysis = mongoose.model('Analysis',analysisSchema)
